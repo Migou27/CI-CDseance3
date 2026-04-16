@@ -1,5 +1,6 @@
 services:
   api:
+    container_name: todo-api
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,19 +10,20 @@ services:
       NODE_ENV: production
     depends_on:
       db:
-        condition: service_healthy # Attend que le healthcheck de PostgreSQL soit OK
+        condition: service_healthy
       redis:
         condition: service_started
     restart: unless-stopped
 
   db:
+    container_name: todo-db
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - pgdata:/var/lib/postgresql/data # Persistance des données
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -31,11 +33,13 @@ services:
     restart: unless-stopped
 
   redis:
+    container_name: todo-redis
     image: redis:7-alpine
     command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
     restart: unless-stopped
 
   nginx:
+    container_name: todo-nginx
     image: nginx:alpine
     ports:
       - "80:80"
